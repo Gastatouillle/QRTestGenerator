@@ -3,39 +3,70 @@ import random
 import os
 import shutil
 
-PitAttributes = ['canShoot', 'canClimb', 'canTrap', 'canIntake', 'canDrive', 'canPass', 'canAmp']
-MatchNumAttributes = ['scoredSpeakerAuto', 'scoredAmpAuto', 'failedToScoreAuto', 'scoredSpeakerTele', 'scoredAmpTele', 'trappedTele', 'passedTele', 'intakedTele', 'failedToScoreTele']
-MatchBoolAttributes = ['failedEnd','climbedEnd', 'trappedEnd']
+headers = [
+    "teamnumber", 
+    "matchnumber", 
+    "Autoprocess", 
+    "Autonet", 
+    "Autol1", 
+    "Autol2", 
+    "Autol3", 
+    "Autol4", 
+    "brokenDownTimerDuration(auton)", 
+    "brokenDownTimerDuration(tele+endgame)", 
+    "process", 
+    "net", 
+    "l1", 
+    "l2", 
+    "l3", 
+    "l4", 
+    "missed",
+    "park", 
+    "shallow", 
+    "deep"
+]
 
+boolStart = 17
+intStart = 2
 
 def GenerateCode(GenNum):
-    for gen in range(0,GenNum):
-        MatchType = random.randint(0,1)
-        TeamNum = 5584
-        MatchNum = random.randint(0,150)
+    boolData = headers[boolStart:]
+    intData = headers[intStart:boolStart]
+    infoData = []
+    infostr = ""
 
-        if MatchType == 1:
-            QRdata = ['P']
-            QRdata.append(f"Teamnum={TeamNum}")
-            for x in PitAttributes:
-                DictData = {x: random.randint(0,1)}
-                if DictData[x] == 1:
-                    QRdata.append(x)
-        else: 
-            QRdata = ['M']
-            QRdata.append(f"Teamnum={TeamNum}")
-            QRdata.append(f"Matchnumber={MatchNum}")
-            for x in MatchNumAttributes:
-                QRdata.append(f"{x}={random.randint(0,45)}")
-            
-            for x in PitAttributes:
-                QRdata.append(f"{x}={random.randint(0,1)}")
-        
-        print(QRdata)
-        qr = qrcode.make(QRdata)
-        type(qr)
-        qr.save(f"GenCodes/QR{gen}.png")
+    with open("TeamsList.txt") as TeamsList:
+        TeamsListLines = TeamsList.readlines()
+        TeamsListNoNewLine = []
+        for sub in TeamsListLines:
+            TeamsListNoNewLine.append(sub.replace("\n", ""))
+        for gen in range(0,GenNum):
+            infoData = []
+            infostr = ""
+            MatchNum = random.randint(0,150)
+            TeamNum = TeamsListNoNewLine[random.randint(0, len(TeamsListNoNewLine)-1)]
+            print(f"TeamNum: {TeamNum}")
+            infoData.append(int(TeamNum))
+            infoData.append(MatchNum)
+            for i in range(len(intData)):
+                infoData.append(random.randint(0,8))
+
+
+            for i in range(len(boolData)):
+                if boolData[i] == 1:
+                    infoData.append(True)
+                else:
+                    infoData.append(False)
+            for i in infoData:
+                infostr = infostr + ',' + str(i)
+            infostr = infostr.removeprefix(',')
+            print(infostr)
+            qr = qrcode.make(infostr)
+            type(qr)
+            qr.save(f"GenCodes/QR{gen}.png")
 
 shutil.rmtree("GenCodes")
 os.makedirs("GenCodes")
 GenerateCode(50)
+print("-----------------------------------")
+
